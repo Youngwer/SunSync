@@ -24,7 +24,7 @@
 
 The screenshots offer a clear and intuitive glimpse of the key features:
 <table style="width:100%; table-layout:fixed;"> <tr> <th style="text-align:center;">Weather & Sunlight Overview</th> <th style="text-align:center;">Light History Visualization</th> </tr> <tr> <td style="text-align:center;"> <img src="IMG-GitHub/weather-sunlight-overview.png" alt="Weather Overview" width="320"/><br><br> </td> <td style="text-align:center;"> <img src="IMG-GitHub/light-history-chart.png" alt="Light History" width="320"/><br><br> </td> </tr> <tr> <td style="text-align:center;"> 🔸 Real-Time Weather Data<br> 🔸 Sunrise & Sunset Times<br> 🔸 Activity Suggestions </td> <td style="text-align:center;"> 🔸 Hourly Light Trends<br> 🔸 Daytime Data Filtering<br> 🔸 Simple Chart Display </td> </tr> </table>
-<table style="width:100%; table-layout:fixed;"> <tr> <th style="text-align:center;">Activity Reminder Setup</th> <th style="text-align:center;">Manage Your Reminders</th> </tr> <tr> <td style="text-align:center;"> <img src="image/new-reminder-setup.gif" alt="New Reminder" width="320"/><br><br> </td> <td style="text-align:center;"> <img src="image/mangae-reminder.gif" alt="My Reminders" width="320"/><br><br> </td> </tr> <tr> <td style="text-align:center;"> 🔸 Custom Activity Selection<br> 🔸 Sunrise/Sunset Timing<br> 🔸 Notification & Repeat Options </td> <td style="text-align:center;"> 🔸 View All Reminders<br> 🔸 Edit or Delete Easily<br> 🔸 Clean & Intuitive Design </td> </tr> </table>
+<table style="width:100%; table-layout:fixed;"> <tr> <th style="text-align:center;">Activity Reminder Setup</th> <th style="text-align:center;">Manage Your Reminders</th> </tr> <tr> <td style="text-align:center;"> <img src="image/new-reminder-setup.gif" alt="New Reminder" width="320"/><br><br> </td> <td style="text-align:center;"> <img src="image/manage-reminder.gif" alt="My Reminders" width="320"/><br><br> </td> </tr> <tr> <td style="text-align:center;"> 🔸 Custom Activity Selection<br> 🔸 Sunrise/Sunset Timing<br> 🔸 Notification & Repeat Options </td> <td style="text-align:center;"> 🔸 View All Reminders<br> 🔸 Edit or Delete Easily<br> 🔸 Clean & Intuitive Design </td> </tr> </table>
 
 ### 🌟 Core Functionalities
 
@@ -232,9 +232,4 @@ GitHub: https://github.com/Youngwer
 - [Firebase](https://console.firebase.google.com/) for backend services
 - [Flutter community](https://flutter.dev/community) for excellent packages
 
----
 
-<div align="center">
-  Made with ❤️ for UCL CASA0015 Module<br>
-  Connected Environments | Mobile Systems & Interactions
-</div>
