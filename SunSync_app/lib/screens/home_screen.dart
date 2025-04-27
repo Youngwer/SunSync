@@ -1,5 +1,8 @@
+// screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import 'dart:math' as math;
 import '../providers/weather_provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -118,38 +121,114 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // 日出日落部分的UI (保持不变)
+  // 日出日落部分的UI
   Widget _buildSunriseSunsetSection() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.orange[100],
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Sunrise & Sunset',
-            style: TextStyle(
-              color: Colors.orange,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+    return Consumer<WeatherProvider>(
+      builder: (context, weatherProvider, child) {
+        if (weatherProvider.sunrise == null || weatherProvider.sunset == null) {
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.orange[100],
+              borderRadius: BorderRadius.circular(15),
             ),
+            child: const Center(
+              child: CircularProgressIndicator(color: Colors.orange),
+            ),
+          );
+        }
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: Colors.orange[100],
+            borderRadius: BorderRadius.circular(15),
           ),
-          SizedBox(height: 10),
-          Text(
-            'This section will display sunrise and sunset times.',
-            style: TextStyle(color: Colors.orange, fontSize: 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Sunrise & Sunset',
+                style: TextStyle(
+                  color: Colors.orange,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // 太阳轨迹可视化
+              SizedBox(
+                height: 150,
+                child: CustomPaint(
+                  size: const Size(double.infinity, 150),
+                  painter: SunPathPainter(
+                    progress: weatherProvider.getSunProgress(),
+                    isDaytime: weatherProvider.isDaytime(),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // 日出日落时间
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Sunrise',
+                        style: TextStyle(
+                          color: Colors.orange,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        DateFormat('HH:mm').format(weatherProvider.sunrise!),
+                        style: TextStyle(
+                          color: Colors.orange[700],
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      const Text(
+                        'Sunset',
+                        style: TextStyle(
+                          color: Colors.orange,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        DateFormat('HH:mm').format(weatherProvider.sunset!),
+                        style: TextStyle(
+                          color: Colors.orange[700],
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
           ),
-          SizedBox(height: 100), // 占位，后面会替换成实际内容
-        ],
-      ),
+        );
+      },
     );
   }
 
-  // 新增：活动推荐部分
+  // 活动推荐部分 (保持原样)
   Widget _buildActivityRecommendation(BuildContext context) {
     return Consumer<WeatherProvider>(
       builder: (context, weatherProvider, child) {
@@ -254,5 +333,87 @@ class _HomeScreenState extends State<HomeScreen> {
             'Choose activities based on your preference. Both indoor and outdoor options are suitable.',
       };
     }
+  }
+}
+
+// 自定义太阳轨迹画板
+class SunPathPainter extends CustomPainter {
+  final double progress;
+  final bool isDaytime;
+
+  SunPathPainter({required this.progress, required this.isDaytime});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint =
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.0;
+
+    // 绘制地平线
+    paint.color = Colors.orange[300]!;
+    canvas.drawLine(
+      Offset(0, size.height * 0.7),
+      Offset(size.width, size.height * 0.7),
+      paint,
+    );
+
+    // 绘制太阳轨迹
+    paint.style = PaintingStyle.stroke;
+    paint.color = Colors.orange;
+
+    final path = Path();
+    path.moveTo(0, size.height * 0.7);
+
+    // 绘制一个弧形路径表示太阳轨迹
+    path.quadraticBezierTo(size.width / 2, 0, size.width, size.height * 0.7);
+
+    canvas.drawPath(path, paint);
+
+    // 根据进度绘制太阳位置
+    if (isDaytime) {
+      // 计算太阳位置
+      final sunX = size.width * progress;
+
+      // 使用二次贝塞尔曲线计算 Y 坐标
+      final t = progress;
+      final sunY =
+          2 * (1 - t) * t * 0 +
+          (1 - t) * (1 - t) * size.height * 0.7 +
+          t * t * size.height * 0.7;
+
+      // 绘制太阳
+      paint.style = PaintingStyle.fill;
+      paint.color = Colors.orange;
+      canvas.drawCircle(Offset(sunX, sunY), 10, paint);
+
+      // 绘制太阳光晕
+      paint.color = Colors.orange.withOpacity(0.3);
+      canvas.drawCircle(Offset(sunX, sunY), 15, paint);
+    } else {
+      // 夜晚显示月亮
+      final centerX = size.width / 2;
+      final centerY = size.height / 3;
+
+      // 绘制月亮
+      paint.style = PaintingStyle.fill;
+      paint.color = Colors.grey[300]!;
+      canvas.drawCircle(Offset(centerX, centerY), 10, paint);
+
+      // 绘制星星
+      paint.color = Colors.yellow[700]!;
+      final random = math.Random(42); // 固定种子以保持星星位置一致
+      for (int i = 0; i < 10; i++) {
+        final starX = random.nextDouble() * size.width;
+        final starY = random.nextDouble() * size.height * 0.5;
+        canvas.drawCircle(Offset(starX, starY), 1.5, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(SunPathPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.isDaytime != isDaytime;
   }
 }

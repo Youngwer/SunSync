@@ -1,3 +1,4 @@
+// providers/weather_provider.dart
 import 'package:flutter/material.dart';
 import '../services/weather_service.dart';
 
@@ -12,6 +13,8 @@ class WeatherProvider extends ChangeNotifier {
   double _lowTemp = 0.0;
   bool _isLoading = false;
   String? _error;
+  DateTime? _sunrise;
+  DateTime? _sunset;
 
   // Getters
   String get location => _location;
@@ -21,6 +24,8 @@ class WeatherProvider extends ChangeNotifier {
   double get lowTemp => _lowTemp;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  DateTime? get sunrise => _sunrise;
+  DateTime? get sunset => _sunset;
 
   // 通过城市名称获取天气数据
   Future<void> fetchWeatherByCity(String city) async {
@@ -56,5 +61,42 @@ class WeatherProvider extends ChangeNotifier {
     _condition = weather['main'];
     _highTemp = (main['temp_max'] as num).toDouble();
     _lowTemp = (main['temp_min'] as num).toDouble();
+
+    // 解析日出日落时间
+    if (data['sunrise'] != null) {
+      _sunrise = DateTime.parse(data['sunrise']);
+    }
+    if (data['sunset'] != null) {
+      _sunset = DateTime.parse(data['sunset']);
+    }
+  }
+
+  // 计算当前太阳位置进度 (0.0 到 1.0)
+  double getSunProgress() {
+    if (_sunrise == null || _sunset == null) return 0.0;
+
+    final now = DateTime.now();
+
+    // 如果当前时间在日出之前或日落之后，返回0
+    if (now.isBefore(_sunrise!) || now.isAfter(_sunset!)) {
+      return 0.0;
+    }
+
+    // 计算日出到日落的总分钟数
+    final totalMinutes = _sunset!.difference(_sunrise!).inMinutes;
+
+    // 计算当前时间距离日出的分钟数
+    final elapsedMinutes = now.difference(_sunrise!).inMinutes;
+
+    // 返回进度 (0.0 到 1.0)
+    return elapsedMinutes / totalMinutes;
+  }
+
+  // 判断当前是否是白天
+  bool isDaytime() {
+    if (_sunrise == null || _sunset == null) return true;
+
+    final now = DateTime.now();
+    return now.isAfter(_sunrise!) && now.isBefore(_sunset!);
   }
 }

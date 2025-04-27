@@ -1,3 +1,4 @@
+// services/weather_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -24,10 +25,10 @@ class WeatherService {
           final lon = location['longitude'];
           final cityName = location['name'];
 
-          // 使用经纬度获取天气数据
+          // 使用经纬度获取天气数据，添加日出日落时间
           final weatherResponse = await http.get(
             Uri.parse(
-              '$weatherBaseUrl/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=auto',
+              '$weatherBaseUrl/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto',
             ),
           );
 
@@ -50,6 +51,8 @@ class WeatherService {
                   'icon': 'default',
                 },
               ],
+              'sunrise': weatherData['daily']['sunrise'][0],
+              'sunset': weatherData['daily']['sunset'][0],
             };
           }
         }
@@ -68,7 +71,7 @@ class WeatherService {
     try {
       final weatherResponse = await http.get(
         Uri.parse(
-          '$weatherBaseUrl/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=auto',
+          '$weatherBaseUrl/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto',
         ),
       );
 
@@ -105,6 +108,8 @@ class WeatherService {
               'icon': 'default',
             },
           ],
+          'sunrise': weatherData['daily']['sunrise'][0],
+          'sunset': weatherData['daily']['sunset'][0],
         };
       }
       throw Exception('Failed to load weather data');

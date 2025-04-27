@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "622328736158",
+    "project_id": "sunsync-322b8",
+    "storage_bucket": "sunsync-322b8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:622328736158:android:62086d0c666b5e9dc40e8f",
+        "android_client_info": {
+          "package_name": "com.example.myfirstapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcNmTN4Vbv3J2GVqyN_hZ6xf_o1KSVsfA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
