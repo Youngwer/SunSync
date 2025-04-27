@@ -5,32 +5,26 @@
     <strong>Harmonize your daily routine with natural light cycles</strong>
   </p>
 
-  <p align="center">
+  <p align="left">
     A Flutter-based mobile application integrated with IoT light sensors to help users maintain healthy lifestyle habits by leveraging natural sunlight patterns.
   </p>
 </div>
 
+
 ## ✨ Key Features
 
-<table>
-  <tr>
-    <td align="center" width="33%">
-      <img src="assets/weather_icon.png" alt="Weather" width="80"><br>
-      <strong>Real-time Weather</strong><br>
-      Live weather data and sun position tracking
-    </td>
-    <td align="center" width="33%">
-      <img src="assets/sensor_icon.png" alt="IoT Sensor" width="80"><br>
-      <strong>IoT Light Monitoring</strong><br>
-      MKR1010 + Light sensor integration
-    </td>
-    <td align="center" width="33%">
-      <img src="assets/reminder_icon.png" alt="Reminders" width="80"><br>
-      <strong>Smart Reminders</strong><br>
-      Sunrise/sunset-synchronized activities
-    </td>
-  </tr>
-</table>
+- **Real-time Weather**: Live weather data and sun position tracking
+- **IoT Light Monitoring**: MKR1010 + Light sensor integration + MQTT
+- **Smart Reminders**: Sunrise/sunset-synchronized activities
+
+
+## 📱 Screenshots
+
+
+
+The screenshots offer a clear and intuitive glimpse of the key features:
+<table style="width:100%; table-layout:fixed;"> <tr> <th style="text-align:center;">Weather & Sunlight Overview</th> <th style="text-align:center;">Light History Visualization</th> </tr> <tr> <td style="text-align:center;"> <img src="IMG-GitHub/weather-sunlight-overview.png" alt="Weather Overview" width="320"/><br><br> </td> <td style="text-align:center;"> <img src="IMG-GitHub/light-history-chart.png" alt="Light History" width="320"/><br><br> </td> </tr> <tr> <td style="text-align:center;"> 🔸 Real-Time Weather Data<br> 🔸 Sunrise & Sunset Times<br> 🔸 Activity Suggestions </td> <td style="text-align:center;"> 🔸 Hourly Light Trends<br> 🔸 Daytime Data Filtering<br> 🔸 Simple Chart Display </td> </tr> </table>
+<table style="width:100%; table-layout:fixed;"> <tr> <th style="text-align:center;">Activity Reminder Setup</th> <th style="text-align:center;">Manage Your Reminders</th> </tr> <tr> <td style="text-align:center;"> <img src="image/new-reminder-setup.gif" alt="New Reminder" width="320"/><br><br> </td> <td style="text-align:center;"> <img src="image/mangae-reminder.gif" alt="My Reminders" width="320"/><br><br> </td> </tr> <tr> <td style="text-align:center;"> 🔸 Custom Activity Selection<br> 🔸 Sunrise/Sunset Timing<br> 🔸 Notification & Repeat Options </td> <td style="text-align:center;"> 🔸 View All Reminders<br> 🔸 Edit or Delete Easily<br> 🔸 Clean & Intuitive Design </td> </tr> </table>
 
 ### 🌟 Core Functionalities
 
@@ -41,24 +35,6 @@
 - **Smart Recommendations**: Personalized activity suggestions based on light conditions
 - **Cloud Synchronization**: Firebase integration for data persistence
 
-## 📱 Screenshots
-
-<table>
-  <tr>
-    <td align="center">
-      <img src="assets/screenshots/home.png" alt="Home Screen" width="250"/><br>
-      <b>Weather Dashboard</b>
-    </td>
-    <td align="center">
-      <img src="assets/screenshots/light.png" alt="Light Screen" width="250"/><br>
-      <b>Light Monitoring</b>
-    </td>
-    <td align="center">
-      <img src="assets/screenshots/reminder.png" alt="Reminder Screen" width="250"/><br>
-      <b>Activity Reminders</b>
-    </td>
-  </tr>
-</table>
 
 ## 🛠 Technology Stack
 
@@ -241,12 +217,20 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 📞 Contact
+
+Project Lead: Wenhao Yang
+
+Email: ucfnwy2@ucl.ac.uk
+
+GitHub: https://github.com/Youngwer
+
 ## 👏 Acknowledgments
 
-- OpenMeteo for free weather API
-- UCL CASA for educational support
-- Firebase for backend services
-- Flutter community for excellent packages
+- [OpenMeteo](https://open-meteo.com/) for free weather API
+- [UCL CASA](https://www.ucl.ac.uk/bartlett/casa) for educational support
+- [Firebase](https://console.firebase.google.com/) for backend services
+- [Flutter community](https://flutter.dev/community) for excellent packages
 
 ---
 
