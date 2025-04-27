@@ -1,4 +1,4 @@
-// screens/new_reminder_screen.dart
+// Updated new_reminder_screen.dart with proper preSelectedActivity handling
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -33,18 +33,22 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
   bool _isCustomTime = false;
   TimeOfDay _selectedTime = TimeOfDay.now();
 
-  final List<String> _activities = [
-    'Running',
-    'Walking',
-    'Yoga',
-    'Photography',
-    'Meditation',
-    'Exercise',
-    'Cycling',
-    'Hiking',
+  final List<Map<String, dynamic>> _activities = [
+    {'name': 'Running', 'icon': Icons.directions_run, 'color': Colors.orange},
+    {'name': 'Walking', 'icon': Icons.directions_walk, 'color': Colors.green},
+    {'name': 'Yoga', 'icon': Icons.self_improvement, 'color': Colors.purple},
+    {'name': 'Photography', 'icon': Icons.camera_alt, 'color': Colors.blue},
+    {'name': 'Meditation', 'icon': Icons.spa, 'color': Colors.teal},
+    {'name': 'Exercise', 'icon': Icons.fitness_center, 'color': Colors.red},
+    {'name': 'Cycling', 'icon': Icons.pedal_bike, 'color': Colors.amber},
+    {'name': 'Hiking', 'icon': Icons.terrain, 'color': Colors.brown},
   ];
 
-  final List<String> _timingOptions = ['Sunrise', 'Sunset', 'Custom time'];
+  final List<Map<String, dynamic>> _timingOptions = [
+    {'name': 'Sunrise', 'icon': Icons.wb_sunny, 'color': Colors.orange},
+    {'name': 'Sunset', 'icon': Icons.nights_stay, 'color': Colors.indigo},
+    {'name': 'Custom time', 'icon': Icons.access_time, 'color': Colors.blue},
+  ];
 
   @override
   void initState() {
@@ -52,11 +56,15 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
     if (widget.editingReminder != null) {
       _setupEditMode();
     } else {
-      _selectedActivity = _activities[0];
+      // 处理预选活动
+      if (widget.preSelectedActivity != null) {
+        _selectedActivity = widget.preSelectedActivity;
+      } else {
+        _selectedActivity = _activities[0]['name'];
+      }
       _updateReminderDateTime();
     }
 
-    // 监听天气数据变化，更新日出日落时间
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<WeatherProvider>(
         context,
@@ -108,7 +116,6 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
       );
     } else {
       _isCustomTime = false;
-      // 从 WeatherProvider 获取实际的日出日落时间
       final weatherProvider = Provider.of<WeatherProvider>(
         context,
         listen: false,
@@ -121,7 +128,6 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
           weatherProvider.sunset != null) {
         _reminderDateTime = weatherProvider.sunset!;
       } else {
-        // 如果天气数据不可用，使用默认值
         final now = DateTime.now();
         if (_selectedTimingOption == 'Sunrise') {
           _reminderDateTime = DateTime(now.year, now.month, now.day, 6, 0);
@@ -135,33 +141,53 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
   void _showCustomTimePicker() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (BuildContext context) {
         return Container(
-          height: 300,
-          color: Colors.white,
+          height: 340,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 15,
+                offset: Offset(0, -5),
+              ),
+            ],
+          ),
           child: Column(
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+                  horizontal: 20,
+                  vertical: 16,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
+                  border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
-                    const Text(
+                    Text(
                       'Select Time',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 19,
                         fontWeight: FontWeight.bold,
+                        color: Colors.grey[800],
+                        letterSpacing: 0.3,
                       ),
                     ),
                     TextButton(
@@ -171,7 +197,14 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
                           _updateReminderDateTime();
                         });
                       },
-                      child: const Text('Done'),
+                      child: Text(
+                        'Done',
+                        style: TextStyle(
+                          color: Colors.blue[700],
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -230,21 +263,53 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
         widget.onSave!();
       }
 
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            widget.editingReminder != null
-                ? 'Reminder updated'
-                : 'Reminder saved',
+          content: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white),
+              const SizedBox(width: 12),
+              Text(
+                widget.editingReminder != null
+                    ? 'Reminder updated successfully'
+                    : 'Reminder created successfully',
+                style: const TextStyle(fontSize: 16),
+              ),
+            ],
           ),
-          backgroundColor: Colors.green,
+          backgroundColor: Colors.green[600],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
         ),
       );
     } catch (e) {
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error saving reminder: ${e.toString()}'),
-          backgroundColor: Colors.red,
+          content: Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Error saving reminder: ${e.toString()}',
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.red[400],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
         ),
       );
     }
@@ -252,260 +317,414 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Select Activity',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey[300]!),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.blue[50]!, Colors.white, Colors.blue[50]!],
+          stops: const [0.0, 0.5, 1.0],
+        ),
+      ),
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Select Activity',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+                letterSpacing: 0.3,
+              ),
             ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                isExpanded: true,
-                value: _selectedActivity,
-                items:
-                    _activities.map((activity) {
-                      return DropdownMenuItem(
-                        value: activity,
-                        child: Text(activity),
-                      );
-                    }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedActivity = value;
-                  });
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 110,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _activities.length,
+                physics: const BouncingScrollPhysics(),
+                itemBuilder: (context, index) {
+                  final activity = _activities[index];
+                  final isSelected = _selectedActivity == activity['name'];
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedActivity = activity['name'];
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: 95,
+                      margin: const EdgeInsets.only(right: 12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors:
+                              isSelected
+                                  ? [
+                                    (activity['color'] as Color).withOpacity(
+                                      0.8,
+                                    ),
+                                    (activity['color'] as Color),
+                                  ]
+                                  : [Colors.white, Colors.grey[50]!],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color:
+                              isSelected
+                                  ? (activity['color'] as Color)
+                                  : Colors.grey[300]!,
+                          width: isSelected ? 2 : 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                isSelected
+                                    ? (activity['color'] as Color).withOpacity(
+                                      0.3,
+                                    )
+                                    : Colors.black.withOpacity(0.05),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            activity['icon'] as IconData,
+                            size: 32,
+                            color:
+                                isSelected
+                                    ? Colors.white
+                                    : activity['color'] as Color,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            activity['name'] as String,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color:
+                                  isSelected ? Colors.white : Colors.grey[800],
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
                 },
               ),
             ),
-          ),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          const Text(
-            'When',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: _isCustomTime ? Colors.blue[50] : Colors.orange[50],
-              borderRadius: BorderRadius.circular(8),
+            Text(
+              'When',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+                letterSpacing: 0.3,
+              ),
             ),
-            child: Row(
+            const SizedBox(height: 12),
+
+            // 时间选择器
+            SizedBox(
+              height: 120,
+              child: Row(
+                children:
+                    _timingOptions.map((option) {
+                      final isSelected =
+                          _selectedTimingOption == option['name'];
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedTimingOption = option['name'];
+                              if (option['name'] == 'Custom time') {
+                                _isCustomTime = true;
+                                _showCustomTimePicker();
+                              } else {
+                                _isCustomTime = false;
+                                _updateReminderDateTime();
+                              }
+                            });
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            margin: const EdgeInsets.symmetric(horizontal: 5),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors:
+                                    isSelected
+                                        ? [
+                                          (option['color'] as Color)
+                                              .withOpacity(0.8),
+                                          (option['color'] as Color),
+                                        ]
+                                        : [Colors.white, Colors.grey[50]!],
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color:
+                                    isSelected
+                                        ? (option['color'] as Color)
+                                        : Colors.grey[300]!,
+                                width: isSelected ? 2 : 1,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      isSelected
+                                          ? (option['color'] as Color)
+                                              .withOpacity(0.3)
+                                          : Colors.black.withOpacity(0.05),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  option['icon'] as IconData,
+                                  size: 30,
+                                  color:
+                                      isSelected
+                                          ? Colors.white
+                                          : option['color'] as Color,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  option['name'] as String,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color:
+                                        isSelected
+                                            ? Colors.white
+                                            : Colors.grey[800],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                if (isSelected) ...[
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    DateFormat(
+                                      'HH:mm',
+                                    ).format(_reminderDateTime),
+                                    style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // 时间微调按钮
+            Row(
               children: [
-                Icon(
-                  _isCustomTime ? Icons.access_time : Icons.wb_sunny,
-                  color: _isCustomTime ? Colors.blue[700] : Colors.orange[700],
-                ),
-                const SizedBox(width: 8),
                 Expanded(
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      isExpanded: true,
-                      value: _selectedTimingOption,
-                      items:
-                          _timingOptions.map((timing) {
-                            return DropdownMenuItem(
-                              value: timing,
-                              child: Text(timing),
-                            );
-                          }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedTimingOption = value!;
-                          if (value == 'Custom time') {
-                            _isCustomTime = true;
-                            _showCustomTimePicker();
-                          } else {
-                            _isCustomTime = false;
-                            _updateReminderDateTime();
-                          }
-                        });
-                      },
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _reminderDateTime = _reminderDateTime.subtract(
+                          const Duration(minutes: 15),
+                        );
+                      });
+                    },
+                    icon: const Icon(Icons.remove_circle_outline, size: 20),
+                    label: const Text('15 min'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.blue[700],
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(color: Colors.blue[200]!),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _reminderDateTime = _reminderDateTime.add(
+                          const Duration(minutes: 15),
+                        );
+                      });
+                    },
+                    icon: const Icon(Icons.add_circle_outline, size: 20),
+                    label: const Text('15 min'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.blue[700],
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(color: Colors.blue[200]!),
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
-          ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 24),
 
-          InkWell(
-            onTap: _isCustomTime ? _showCustomTimePicker : null,
-            child: Container(
-              padding: const EdgeInsets.all(16),
+            // 设置选项
+            Container(
               decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: _isCustomTime ? Colors.blue[200]! : Colors.grey[200]!,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Time',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                        Text(
-                          DateFormat('HH:mm').format(_reminderDateTime),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
                   ),
-                  if (_isCustomTime)
-                    Icon(Icons.edit, color: Colors.blue[400], size: 20),
+                ],
+              ),
+              child: Column(
+                children: [
+                  _buildSettingItem(
+                    'Notification',
+                    Icons.notifications_active,
+                    Colors.purple,
+                    _enableNotification,
+                    (value) {
+                      setState(() {
+                        _enableNotification = value;
+                      });
+                    },
+                  ),
+                  Divider(height: 1, color: Colors.grey[200]),
+                  _buildSettingItem(
+                    'Repeat Daily',
+                    Icons.repeat,
+                    Colors.green,
+                    _enableRepeat,
+                    (value) {
+                      setState(() {
+                        _enableRepeat = value;
+                      });
+                    },
+                  ),
                 ],
               ),
             ),
-          ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 32),
 
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _reminderDateTime = _reminderDateTime.subtract(
-                        const Duration(minutes: 15),
-                      );
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.lightBlue[100],
-                    foregroundColor: Colors.blue,
-                    elevation: 0,
+            // 保存按钮
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _saveReminder,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue[600],
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Text('-15 min'),
+                  elevation: 2,
+                  shadowColor: Colors.blue.withOpacity(0.5),
                 ),
+                child: Text(
+                  widget.editingReminder != null
+                      ? 'Update Reminder'
+                      : 'Save Reminder',
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingItem(
+    String title,
+    IconData icon,
+    Color color,
+    bool value,
+    Function(bool) onChanged,
+  ) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => onChanged(!value),
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 22),
               ),
               const SizedBox(width: 16),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _reminderDateTime = _reminderDateTime.add(
-                        const Duration(minutes: 15),
-                      );
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.lightBlue[100],
-                    foregroundColor: Colors.blue,
-                    elevation: 0,
-                  ),
-                  child: const Text('+15 min'),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
+                  letterSpacing: 0.2,
+                ),
+              ),
+              const Spacer(),
+              Transform.scale(
+                scale: 0.85,
+                child: Switch(
+                  value: value,
+                  onChanged: onChanged,
+                  activeColor: color,
+                  activeTrackColor: color.withOpacity(0.3),
                 ),
               ),
             ],
           ),
-
-          const SizedBox(height: 24),
-
-          const Text(
-            'Notification',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Enable Notification'),
-                  Text(
-                    'Receive alerts for this activity',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-              Switch(
-                value: _enableNotification,
-                onChanged: (value) {
-                  setState(() {
-                    _enableNotification = value;
-                  });
-                },
-                activeColor: Colors.green,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 8),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Repeat Daily'),
-                  Text(
-                    'Reminder will repeat every day',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-              Switch(
-                value: _enableRepeat,
-                onChanged: (value) {
-                  setState(() {
-                    _enableRepeat = value;
-                  });
-                },
-                activeColor: Colors.green,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 32),
-
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _saveReminder,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
-              child: Text(
-                widget.editingReminder != null ? 'Update' : 'Save',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

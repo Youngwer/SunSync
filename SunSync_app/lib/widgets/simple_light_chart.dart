@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
+import 'dart:math' as math;
 import 'package:intl/intl.dart';
 import '../models/light_history_model.dart';
 
@@ -21,50 +22,147 @@ class SimpleLightChart extends StatefulWidget {
   State<SimpleLightChart> createState() => _SimpleLightChartState();
 }
 
-class _SimpleLightChartState extends State<SimpleLightChart> {
+class _SimpleLightChartState extends State<SimpleLightChart>
+    with SingleTickerProviderStateMixin {
   String? _tooltipText;
   Offset? _tooltipPosition;
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    _animation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOutCubic,
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 320,
+      height: 340,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.blue[50]!, Colors.lightBlue[50]!],
-        ),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 5),
+            color: Colors.blue.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       child: Stack(
         children: [
+          // 背景装饰
+          Positioned(
+            right: -50,
+            top: -50,
+            child: Container(
+              width: 150,
+              height: 150,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    Colors.blue.withOpacity(0.05),
+                    Colors.blue.withOpacity(0.0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: -30,
+            bottom: -30,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    Colors.cyan.withOpacity(0.05),
+                    Colors.cyan.withOpacity(0.0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // 主内容
           Column(
             children: [
               Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                padding: const EdgeInsets.all(20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Light History',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue[800],
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'LIGHT HISTORY',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.blue[800],
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Today\'s light levels from sunrise to sunset',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Today\'s indoor light levels from sunrise to sunset',
-                      style: TextStyle(fontSize: 14, color: Colors.blue[600]),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blue[50],
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.blue[100]!, width: 1),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: Colors.blue,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Live',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue[800],
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -78,13 +176,19 @@ class _SimpleLightChartState extends State<SimpleLightChart> {
                   onPanEnd: (_) => _clearTooltip(),
                   onTapUp: (_) => _clearTooltip(),
                   onLongPressEnd: (_) => _clearTooltip(),
-                  child: CustomPaint(
-                    size: Size(double.infinity, 200),
-                    painter: SimpleLightChartPainter(
-                      data: widget.data,
-                      sunrise: widget.sunrise,
-                      sunset: widget.sunset,
-                    ),
+                  child: AnimatedBuilder(
+                    animation: _animation,
+                    builder: (context, child) {
+                      return CustomPaint(
+                        size: Size(double.infinity, 240),
+                        painter: SimpleLightChartPainter(
+                          data: widget.data,
+                          sunrise: widget.sunrise,
+                          sunset: widget.sunset,
+                          animationValue: _animation.value,
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -93,30 +197,46 @@ class _SimpleLightChartState extends State<SimpleLightChart> {
           // Tooltip
           if (_tooltipText != null && _tooltipPosition != null)
             Positioned(
-              left: _tooltipPosition!.dx - 60,
-              top: _tooltipPosition!.dy - 50,
+              left: _tooltipPosition!.dx - 70,
+              top: _tooltipPosition!.dy - 60,
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Colors.blue[700]!, Colors.blue[900]!],
                   ),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
+                      color: Colors.blue.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
-                child: Text(
-                  _tooltipText!,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
+                child: Column(
+                  children: [
+                    Text(
+                      _tooltipText!.split('\n')[0],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _tooltipText!.split('\n')[1],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -130,7 +250,7 @@ class _SimpleLightChartState extends State<SimpleLightChart> {
     final size = renderBox.size;
 
     // 减去边距
-    final chartPosition = localPosition.translate(-50, 0);
+    final chartPosition = localPosition.translate(-60, 0);
 
     if (widget.data.isEmpty) return;
 
@@ -147,14 +267,15 @@ class _SimpleLightChartState extends State<SimpleLightChart> {
 
     for (var item in widget.data) {
       final minutesFromStart = item.timestamp.difference(startTime).inMinutes;
-      final x = (size.width - 66) * minutesFromStart / timeRange;
-      final y = (size.height - 80) - (size.height - 80) * item.lightLevel / 100;
+      final x = (size.width - 80) * minutesFromStart / timeRange;
+      final y =
+          (size.height - 100) - (size.height - 100) * item.lightLevel / 100;
 
       final distance = (Offset(x, y) - chartPosition).distance;
       if (distance < minDistance && distance < 30) {
         minDistance = distance;
         closestPoint = item;
-        closestOffset = Offset(x + 50, y + 80);
+        closestOffset = Offset(x + 60, y + 80);
       }
     }
 
@@ -181,8 +302,14 @@ class SimpleLightChartPainter extends CustomPainter {
   final List<LightHistoryModel> data;
   final DateTime? sunrise;
   final DateTime? sunset;
+  final double animationValue;
 
-  SimpleLightChartPainter({required this.data, this.sunrise, this.sunset});
+  SimpleLightChartPainter({
+    required this.data,
+    this.sunrise,
+    this.sunset,
+    this.animationValue = 1.0,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -196,7 +323,7 @@ class SimpleLightChartPainter extends CustomPainter {
           ..strokeCap = StrokeCap.round
           ..strokeJoin = StrokeJoin.round;
 
-    final fillPaint =
+    final gradientPaint =
         Paint()
           ..style = PaintingStyle.fill
           ..shader = LinearGradient(
@@ -210,24 +337,35 @@ class SimpleLightChartPainter extends CustomPainter {
 
     final gridPaint =
         Paint()
-          ..color = Colors.grey[300]!.withOpacity(0.5)
+          ..color = Colors.grey[200]!
           ..strokeWidth = 1.0;
 
+    final dashPaint =
+        Paint()
+          ..color = Colors.grey[300]!
+          ..strokeWidth = 1.0
+          ..style = PaintingStyle.stroke;
+
     // 留出边距
-    final leftMargin = 55.0;
-    final bottomMargin = 40.0;
-    final topMargin = 15.0;
-    final rightMargin = 25.0;
+    final leftMargin = 60.0;
+    final bottomMargin = 50.0;
+    final topMargin = 20.0;
+    final rightMargin = 30.0;
     final chartWidth = size.width - leftMargin - rightMargin;
     final chartHeight = size.height - bottomMargin - topMargin;
 
-    // 绘制网格线
+    // 绘制背景网格
     for (int i = 0; i <= 100; i += 20) {
       final y = topMargin + chartHeight - (chartHeight * i / 100);
-      canvas.drawLine(
+
+      // 绘制虚线网格
+      _drawDashedLine(
+        canvas,
         Offset(leftMargin, y),
         Offset(size.width - rightMargin, y),
-        gridPaint,
+        dashPaint,
+        dashWidth: 5,
+        dashSpace: 5,
       );
 
       // 绘制Y轴标签
@@ -243,7 +381,7 @@ class SimpleLightChartPainter extends CustomPainter {
             ..addText('$i%');
       final paragraph = paragraphBuilder.build();
       paragraph.layout(ui.ParagraphConstraints(width: 40));
-      canvas.drawParagraph(paragraph, Offset(leftMargin - 40, y - 6));
+      canvas.drawParagraph(paragraph, Offset(leftMargin - 45, y - 6));
     }
 
     // 计算时间范围
@@ -272,7 +410,9 @@ class SimpleLightChartPainter extends CustomPainter {
         fillPath.moveTo(points[0].dx, topMargin + chartHeight);
         fillPath.lineTo(points[0].dx, points[0].dy);
 
-        for (int i = 0; i < points.length - 1; i++) {
+        // 限制路径长度根据动画值
+        final pointCount = (points.length * animationValue).ceil();
+        for (int i = 0; i < pointCount - 1; i++) {
           final p0 = i > 0 ? points[i - 1] : points[i];
           final p1 = points[i];
           final p2 = points[i + 1];
@@ -287,68 +427,61 @@ class SimpleLightChartPainter extends CustomPainter {
           fillPath.cubicTo(cp1x, cp1y, cp2x, cp2y, p2.dx, p2.dy);
         }
 
-        fillPath.lineTo(points.last.dx, topMargin + chartHeight);
-        fillPath.close();
+        if (pointCount > 0) {
+          fillPath.lineTo(points[pointCount - 1].dx, topMargin + chartHeight);
+          fillPath.close();
 
-        // 绘制填充区域
-        canvas.drawPath(fillPath, fillPaint);
+          // 绘制填充区域
+          canvas.drawPath(fillPath, gradientPaint);
 
-        // 绘制曲线
-        canvas.drawPath(path, paint);
+          // 绘制曲线
+          canvas.drawPath(path, paint);
 
-        // 绘制数据点
-        for (var point in points) {
-          // 外圈
-          canvas.drawCircle(
-            point,
-            4,
-            Paint()
-              ..color = Colors.white
-              ..style = PaintingStyle.fill,
-          );
-          // 内圈
-          canvas.drawCircle(
-            point,
-            3,
-            Paint()
-              ..color = Colors.blue
-              ..style = PaintingStyle.fill,
-          );
+          // 绘制数据点
+          for (int i = 0; i < pointCount; i++) {
+            final point = points[i];
+
+            // 数据点发光效果
+            canvas.drawCircle(
+              point,
+              6,
+              Paint()..color = Colors.blue.withOpacity(0.2),
+            );
+
+            // 外圈
+            canvas.drawCircle(
+              point,
+              4,
+              Paint()
+                ..color = Colors.white
+                ..style = PaintingStyle.fill,
+            );
+
+            // 内圈
+            canvas.drawCircle(
+              point,
+              3,
+              Paint()
+                ..color = Colors.blue
+                ..style = PaintingStyle.fill,
+            );
+          }
         }
       }
 
       // 绘制时间标签
-      final List<int> selectedHours = [8, 10, 12, 14, 16, 18];
-
       // 绘制日出时间 - 特殊样式
       _drawTimeLabel(
         canvas,
         DateFormat('HH:mm').format(startTime),
         leftMargin,
-        size.height - bottomMargin + 20,
+        size.height - bottomMargin + 25,
         isSpecial: true,
-      );
-
-      // 添加日出标记
-      final sunriseIcon = Icons.wb_sunny;
-      final sunriseIconPainter = TextPainter(
-        text: TextSpan(
-          text: String.fromCharCode(sunriseIcon.codePoint),
-          style: TextStyle(
-            fontSize: 14,
-            fontFamily: sunriseIcon.fontFamily,
-            color: Colors.amber[700],
-          ),
-        ),
-        textDirection: ui.TextDirection.ltr,
-      );
-      sunriseIconPainter.layout();
-      sunriseIconPainter.paint(
-        canvas,
-        Offset(leftMargin - 7, size.height - bottomMargin - 10),
+        icon: Icons.wb_sunny,
       );
 
       // 绘制选定的时间点
+      final List<int> selectedHours = [8, 10, 12, 14, 16, 18];
       for (int hour in selectedHours) {
         final DateTime time = DateTime(
           startTime.year,
@@ -365,13 +498,12 @@ class SimpleLightChartPainter extends CustomPainter {
           // 只有当时间点不会与日落时间太接近时才绘制
           final minutesToEnd = endTime.difference(time).inMinutes;
           if (minutesToEnd > 60) {
-            // 只有当距离日落超过1小时才显示
             // 绘制垂直虚线
             _drawDashedLine(
               canvas,
               Offset(x, topMargin),
               Offset(x, topMargin + chartHeight),
-              gridPaint,
+              dashPaint,
             );
 
             // 绘制时间标签
@@ -379,7 +511,7 @@ class SimpleLightChartPainter extends CustomPainter {
               canvas,
               '${hour}:00',
               x,
-              size.height - bottomMargin + 20,
+              size.height - bottomMargin + 25,
             );
           }
         }
@@ -390,27 +522,9 @@ class SimpleLightChartPainter extends CustomPainter {
         canvas,
         DateFormat('HH:mm').format(endTime),
         size.width - rightMargin,
-        size.height - bottomMargin + 20,
+        size.height - bottomMargin + 25,
         isSpecial: true,
-      );
-
-      // 添加日落标记
-      final sunsetIcon = Icons.nights_stay;
-      final sunsetIconPainter = TextPainter(
-        text: TextSpan(
-          text: String.fromCharCode(sunsetIcon.codePoint),
-          style: TextStyle(
-            fontSize: 14,
-            fontFamily: sunsetIcon.fontFamily,
-            color: Colors.amber[700],
-          ),
-        ),
-        textDirection: ui.TextDirection.ltr,
-      );
-      sunsetIconPainter.layout();
-      sunsetIconPainter.paint(
-        canvas,
-        Offset(size.width - rightMargin - 7, size.height - bottomMargin - 10),
+        icon: Icons.nights_stay,
       );
     }
   }
@@ -421,9 +535,10 @@ class SimpleLightChartPainter extends CustomPainter {
     double x,
     double y, {
     bool isSpecial = false,
+    IconData? icon,
   }) {
     final textStyle = ui.TextStyle(
-      color: isSpecial ? Colors.amber[700] : Colors.grey[600],
+      color: isSpecial ? Colors.blue[700] : Colors.grey[600],
       fontWeight: isSpecial ? ui.FontWeight.w600 : ui.FontWeight.w500,
     );
 
@@ -434,30 +549,52 @@ class SimpleLightChartPainter extends CustomPainter {
           ..pushStyle(textStyle)
           ..addText(text);
     final paragraph = paragraphBuilder.build();
-    paragraph.layout(ui.ParagraphConstraints(width: 60));
+    paragraph.layout(ui.ParagraphConstraints(width: 70));
 
     if (isSpecial) {
       // 绘制特殊标记背景
       final bgPaint =
           Paint()
-            ..color = Colors.amber[50]!
+            ..color = Colors.blue[50]!
             ..style = PaintingStyle.fill;
 
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset(x, y + 6), width: 55, height: 22),
-          Radius.circular(11),
+          Rect.fromCenter(center: Offset(x, y + 6), width: 60, height: 24),
+          Radius.circular(12),
         ),
         bgPaint,
       );
+
+      // 绘制图标
+      if (icon != null) {
+        final iconPainter = TextPainter(
+          text: TextSpan(
+            text: String.fromCharCode(icon.codePoint),
+            style: TextStyle(
+              fontSize: 16,
+              fontFamily: icon.fontFamily,
+              color: Colors.blue[700],
+            ),
+          ),
+          textDirection: ui.TextDirection.ltr,
+        );
+        iconPainter.layout();
+        iconPainter.paint(canvas, Offset(x - 8, y - 18));
+      }
     }
 
-    canvas.drawParagraph(paragraph, Offset(x - 30, y));
+    canvas.drawParagraph(paragraph, Offset(x - 35, y));
   }
 
-  void _drawDashedLine(Canvas canvas, Offset start, Offset end, Paint paint) {
-    final dashWidth = 3;
-    final dashSpace = 3;
+  void _drawDashedLine(
+    Canvas canvas,
+    Offset start,
+    Offset end,
+    Paint paint, {
+    double dashWidth = 3,
+    double dashSpace = 3,
+  }) {
     double distance = (end - start).distance;
     double currentDistance = 0;
 
@@ -474,6 +611,7 @@ class SimpleLightChartPainter extends CustomPainter {
   bool shouldRepaint(SimpleLightChartPainter oldDelegate) {
     return oldDelegate.data != data ||
         oldDelegate.sunrise != sunrise ||
-        oldDelegate.sunset != sunset;
+        oldDelegate.sunset != sunset ||
+        oldDelegate.animationValue != animationValue;
   }
 }

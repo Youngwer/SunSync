@@ -1,7 +1,7 @@
 // widgets/activity_suggestion_widget.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:ui'; // 添加这个导入
+import 'dart:ui';
 import '../providers/weather_provider.dart';
 import '../screens/new_reminder_screen.dart';
 
@@ -124,14 +124,12 @@ class ActivitySuggestionWidget extends StatelessWidget {
     );
   }
 
-  // 根据天气情况获取活动推荐
   Map<String, dynamic> _getActivityRecommendation(String condition) {
     if (condition.contains('rain') ||
         condition.contains('snow') ||
         condition.contains('thunderstorm') ||
         condition.contains('drizzle') ||
         condition.contains('hail')) {
-      // 恶劣天气 - 室内活动
       return {
         'icon': Icons.self_improvement,
         'title': 'Indoor Activities',
@@ -140,7 +138,6 @@ class ActivitySuggestionWidget extends StatelessWidget {
         'activity': 'Meditation',
       };
     } else if (condition.contains('clear') || condition.contains('sunny')) {
-      // 晴天 - 户外活动
       return {
         'icon': Icons.directions_run,
         'title': 'Outdoor Activities',
@@ -149,7 +146,6 @@ class ActivitySuggestionWidget extends StatelessWidget {
         'activity': 'Running',
       };
     } else if (condition.contains('cloud')) {
-      // 多云 - 轻度户外活动
       return {
         'icon': Icons.directions_walk,
         'title': 'Light Outdoor Activities',
@@ -158,7 +154,6 @@ class ActivitySuggestionWidget extends StatelessWidget {
         'activity': 'Walking',
       };
     } else {
-      // 其他天气情况
       return {
         'icon': Icons.fitness_center,
         'title': 'Flexible Activities',
@@ -169,7 +164,6 @@ class ActivitySuggestionWidget extends StatelessWidget {
     }
   }
 
-  // 导航到快速添加提醒页面
   void _navigateToQuickReminder(
     BuildContext context,
     Map<String, dynamic> recommendation,
@@ -203,8 +197,7 @@ class ActivitySuggestionWidget extends StatelessWidget {
                   child: NewReminderScreen(
                     preSelectedActivity: recommendation['activity'] as String,
                     onSave: () {
-                      Navigator.pop(context); // 保存后返回
-                      // 显示提示
+                      Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: const Text('Reminder created successfully'),

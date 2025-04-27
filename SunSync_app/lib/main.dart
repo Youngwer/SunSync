@@ -50,8 +50,10 @@ class MainScreen extends StatefulWidget {
   _MainScreenState createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen>
+    with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
+  late AnimationController _controller;
 
   // 创建三个页面数组
   static final List<Widget> _pages = [
@@ -60,37 +62,163 @@ class _MainScreenState extends State<MainScreen> {
     const ReminderScreen(),
   ];
 
+  // 导航项配置
+  final List<Map<String, dynamic>> _navItems = [
+    {
+      'icon': Icons.home_rounded,
+      'activeIcon': Icons.home_rounded,
+      'label': 'Home',
+      'color': Colors.blue,
+    },
+    {
+      'icon': Icons.lightbulb_outline_rounded,
+      'activeIcon': Icons.lightbulb_rounded,
+      'label': 'Light',
+      'color': Colors.amber,
+    },
+    {
+      'icon': Icons.alarm_rounded,
+      'activeIcon': Icons.alarm_on_rounded,
+      'label': 'Reminder',
+      'color': Colors.purple,
+    },
+  ];
+
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
     // 初始化通知管理器
     WidgetsBinding.instance.addPostFrameCallback((_) {
       SimpleNotificationManager().init(context);
     });
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+    _controller.forward(from: 0);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.lightbulb_outline),
-            label: 'Light',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 30,
+              offset: const Offset(0, -10),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
+            child: Container(
+              height: 60,
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: List.generate(_navItems.length, (index) {
+                  return GestureDetector(
+                    onTap: () => _onItemTapped(index),
+                    child: _buildNavItem(index),
+                  );
+                }),
+              ),
+            ),
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.alarm), label: 'Reminder'),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
-        onTap: _onItemTapped,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index) {
+    final isSelected = _selectedIndex == index;
+    final item = _navItems[index];
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color:
+            isSelected ? item['color'].withOpacity(0.15) : Colors.transparent,
+        borderRadius: BorderRadius.circular(25),
+      ),
+      child: AnimatedScale(
+        scale: isSelected ? 1.0 : 0.9,
+        duration: const Duration(milliseconds: 200),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.0, end: isSelected ? 1.0 : 0.0),
+              duration: const Duration(milliseconds: 200),
+              builder: (context, value, child) {
+                return Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient:
+                        isSelected
+                            ? LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                item['color'],
+                                item['color'].withOpacity(0.7),
+                              ],
+                            )
+                            : null,
+                    boxShadow:
+                        isSelected
+                            ? [
+                              BoxShadow(
+                                color: item['color'].withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ]
+                            : null,
+                  ),
+                  child: Icon(
+                    isSelected ? item['activeIcon'] : item['icon'],
+                    color: isSelected ? Colors.white : Colors.grey[600],
+                    size: 22,
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 2),
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              style: TextStyle(
+                color: isSelected ? item['color'] : Colors.grey[600],
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+              child: Text(item['label']),
+            ),
+          ],
+        ),
       ),
     );
   }
