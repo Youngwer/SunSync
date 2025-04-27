@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/reminder_model.dart';
 import '../providers/reminder_provider.dart';
-import '../providers/weather_provider.dart'; // 添加 WeatherProvider 导入
+import '../providers/weather_provider.dart';
 
 class NewReminderScreen extends StatefulWidget {
   final ReminderModel? editingReminder;
