@@ -47,6 +47,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.13.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -57,10 +58,19 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+# Flutter Launcher Icons configuration
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/SunSync_icon.png"
+  adaptive_icon_background: "#FFB74D"  # 橙色背景，与你的应用主题相匹配
+  adaptive_icon_foreground: "assets/icons/SunSync_icon.png"
+  remove_alpha_ios: true  # iOS不支持透明背景，这个选项会添加白色背景
 
 # The following section is specific to Flutter packages.
 flutter:
 
+  
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -97,4 +107,5 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
 assets:
-  - .env
+  - assets/icons/SunSync_icon.png
+

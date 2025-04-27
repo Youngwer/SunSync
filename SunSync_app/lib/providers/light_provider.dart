@@ -1,90 +1,160 @@
+// providers/light_provider.dart
+
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/mqtt_service.dart';
+import '../services/firebase_service.dart';
+import '../models/light_history_model.dart';
 
-class LightProvider extends ChangeNotifier {
+class LightProvider with ChangeNotifier {
   final MqttService _mqttService = MqttService();
+  final FirebaseService _firebaseService = FirebaseService();
+  StreamSubscription? _mqttSubscription;
+  StreamSubscription? _lightHistorySubscription;
+  Timer? _uploadTimer;
 
-  // 光照数据
-  String _currentLight = '0';
-  String _highestLight = '0';
+  String _lightCondition = 'Measuring...';
   String _suggestion = '';
-  String _time = '';
+  int _lightLevel = 0;
+  int _highestLightToday = 0;
+  List<LightHistoryModel> _todayLightHistory = [];
+  DateTime? _lastUploadTime;
 
-  // 连接状态
-  bool _isConnected = false;
-  bool _isLoading = false;
-  String? _error;
+  // 每5分钟上传一次数据
+  static const Duration uploadInterval = Duration(minutes: 5);
 
-  // Getters
-  String get currentLight => _currentLight;
-  String get highestLight => _highestLight;
+  String get lightCondition => _lightCondition;
   String get suggestion => _suggestion;
-  String get time => _time;
-  bool get isConnected => _isConnected;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
+  int get lightLevel => _lightLevel;
+  int get highestLightToday => _highestLightToday;
+  List<LightHistoryModel> get todayLightHistory => _todayLightHistory;
 
-  // 构造函数
   LightProvider() {
-    // 初始化连接到MQTT服务器
-    _connectToMqtt();
+    _initialize();
   }
 
-  // 连接到MQTT服务器
-  Future<void> _connectToMqtt() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
+  Future<void> _initialize() async {
+    await _connectToMqtt();
+    _startHistoryListener();
+    _startUploadTimer();
+  }
 
-    try {
-      await _mqttService.initialize();
-
-      // 在连接成功后立即获取当前值
-      _currentLight = _mqttService.currentLight;
-      _highestLight = _mqttService.currentHighestLight; // 获取当前最高值
-      _suggestion = _mqttService.currentSuggestion;
-      _time = _mqttService.currentTime;
-
-      // 订阅数据流更新
-      _mqttService.lightStream.listen((light) {
-        _currentLight = light;
+  void _startHistoryListener() {
+    _lightHistorySubscription?.cancel();
+    _lightHistorySubscription = _firebaseService.getTodayLightHistory().listen(
+      (history) {
+        _todayLightHistory = history;
         notifyListeners();
-      });
+      },
+      onError: (error) {
+        print('Error fetching light history: $error');
+      },
+    );
+  }
 
-      _mqttService.suggestionStream.listen((suggestion) {
-        _suggestion = suggestion;
+  void _startUploadTimer() {
+    _uploadTimer?.cancel();
+    _uploadTimer = Timer.periodic(uploadInterval, (timer) {
+      _uploadLightData();
+    });
+  }
+
+  Future<void> _uploadLightData() async {
+    // 只在白天上传数据
+    final now = DateTime.now();
+
+    // 检查是否应该上传（仅在白天且距离上次上传足够间隔）
+    if (_shouldUploadData(now)) {
+      try {
+        final lightHistory = LightHistoryModel(
+          id: now.millisecondsSinceEpoch.toString(),
+          timestamp: now,
+          lightLevel: _lightLevel,
+          userId: _firebaseService.currentUserId ?? '',
+          date: DateTime(now.year, now.month, now.day),
+        );
+
+        await _firebaseService.addLightHistory(lightHistory);
+        _lastUploadTime = now;
+        print('Light data uploaded: $_lightLevel at $now');
+
+        // 立即通知监听器更新数据
         notifyListeners();
-      });
-
-      _mqttService.timeStream.listen((time) {
-        _time = time;
-        notifyListeners();
-      });
-
-      _mqttService.highestLightStream.listen((highestLight) {
-        _highestLight = highestLight;
-        notifyListeners();
-      });
-
-      _isConnected = true;
-      notifyListeners(); // 确保在获取初始值后通知更新
-    } catch (e) {
-      _error = e.toString();
-      print('连接MQTT错误: $e');
-    } finally {
-      _isLoading = false;
-      notifyListeners();
+      } catch (e) {
+        print('Error uploading light data: $e');
+      }
+    } else {
+      print('Skip upload - Current time: $now, Last upload: $_lastUploadTime');
     }
   }
 
-  // 重新连接到MQTT服务器
-  Future<void> reconnect() async {
-    await _connectToMqtt();
+  bool _shouldUploadData(DateTime now) {
+    // 修改为全天上传（用于测试）
+    // 实际使用时可以改回只在白天上传
+
+    // 检查上次上传时间
+    if (_lastUploadTime == null) {
+      return true;
+    }
+
+    return now.difference(_lastUploadTime!) >= uploadInterval;
   }
 
-  // 关闭MQTT连接
+  Future<void> _connectToMqtt() async {
+    try {
+      await _mqttService.connect();
+      _mqttSubscription = _mqttService.getMessagesStream().listen((messages) {
+        if (messages[MqttService.topicLight] != null) {
+          int value = int.tryParse(messages[MqttService.topicLight]!) ?? 0;
+          _updateLightLevel(value);
+        }
+        if (messages[MqttService.topicSuggest] != null) {
+          _updateSuggestion(messages[MqttService.topicSuggest]!);
+        }
+        if (messages[MqttService.topicHighestLight] != null) {
+          int value =
+              int.tryParse(messages[MqttService.topicHighestLight]!) ?? 0;
+          _updateHighestLight(value);
+        }
+        notifyListeners();
+      });
+    } catch (e) {
+      print('Error connecting to MQTT: $e');
+      _setError('Connection failed');
+    }
+  }
+
+  void _updateLightLevel(int value) {
+    _lightLevel = value;
+    if (value < 30) {
+      _lightCondition = 'Low Light';
+    } else if (value < 70) {
+      _lightCondition = 'Good Light';
+    } else {
+      _lightCondition = 'Bright Light';
+    }
+  }
+
+  void _updateSuggestion(String suggestion) {
+    _suggestion = suggestion;
+  }
+
+  void _updateHighestLight(int value) {
+    _highestLightToday = value;
+  }
+
+  void _setError(String message) {
+    _lightCondition = message;
+    _suggestion = 'Unable to get data';
+    notifyListeners();
+  }
+
+  @override
   void dispose() {
-    _mqttService.dispose();
+    _mqttSubscription?.cancel();
+    _lightHistorySubscription?.cancel();
+    _uploadTimer?.cancel();
+    _mqttService.disconnect();
     super.dispose();
   }
 }

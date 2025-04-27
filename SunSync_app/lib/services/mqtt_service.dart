@@ -1,146 +1,97 @@
+// services/mqtt_service.dart
+
 import 'dart:async';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
-import 'package:flutter/material.dart';
 
 class MqttService {
-  // MQTT客户端
-  MqttServerClient? _client;
+  late MqttServerClient client;
+  final StreamController<Map<String, String>> _messageStreamController =
+      StreamController<Map<String, String>>.broadcast();
+  final Map<String, String> _latestMessages = {};
 
-  // MQTT服务器信息
-  final String _host = 'mqtt.cetools.org';
-  final int _port = 1884;
-  final String _username = 'student';
-  final String _password = 'ce2021-mqtt-forget-whale';
-  final String _clientIdentifier =
-      'flutter_client_${DateTime.now().millisecondsSinceEpoch}';
+  // MQTT连接配置
+  static const String broker = 'mqtt.cetools.org';
+  static const int port = 1884;
+  static const String username = 'student';
+  static const String password = 'ce2021-mqtt-forget-whale';
+  static const String clientId = 'flutter_light_monitor';
 
-  // MQTT主题
-  final String _topicLight = 'student/SunSync/realtime/light';
-  final String _topicSuggestion = 'student/SunSync/realtime/suggestion';
-  final String _topicTime = 'student/SunSync/realtime/time';
-  final String _topicHighestLight = 'student/SunSync/highest_light';
+  // 订阅的主题
+  static const String topicLight = 'student/SunSync/realtime/light';
+  static const String topicSuggest = 'student/SunSync/realtime/suggestion';
+  static const String topicHighestLight = 'student/SunSync/highest_light';
 
-  // 数据流控制器
-  final _lightController = StreamController<String>.broadcast();
-  final _suggestionController = StreamController<String>.broadcast();
-  final _timeController = StreamController<String>.broadcast();
-  final _highestLightController = StreamController<String>.broadcast();
+  Stream<Map<String, String>> getMessagesStream() {
+    return _messageStreamController.stream;
+  }
 
-  // 数据流
-  Stream<String> get lightStream => _lightController.stream;
-  Stream<String> get suggestionStream => _suggestionController.stream;
-  Stream<String> get timeStream => _timeController.stream;
-  Stream<String> get highestLightStream => _highestLightController.stream;
+  Future<void> connect() async {
+    client = MqttServerClient(broker, clientId);
+    client.port = port;
+    client.logging(on: false);
+    client.keepAlivePeriod = 60;
+    client.onDisconnected = _onDisconnected;
+    client.onConnected = _onConnected;
+    client.onSubscribed = _onSubscribed;
 
-  // 当前数据值
-  String _currentLight = '0';
-  String _currentSuggestion = '';
-  String _currentTime = '';
-  String _currentHighestLight = '0';
-
-  // 获取当前值的getter方法
-  String get currentLight => _currentLight;
-  String get currentSuggestion => _currentSuggestion;
-  String get currentTime => _currentTime;
-  String get currentHighestLight => _currentHighestLight;
-
-  // 初始化并连接到MQTT服务器
-  Future<void> initialize() async {
-    _client = MqttServerClient(_host, _clientIdentifier);
-    _client!.port = _port;
-    _client!.logging(on: false);
-    _client!.keepAlivePeriod = 60;
-    _client!.onDisconnected = _onDisconnected;
-    _client!.onConnected = _onConnected;
-
-    final connMess = MqttConnectMessage()
-        .withClientIdentifier(_clientIdentifier)
-        .withWillTopic('willtopic')
-        .withWillMessage('My Will message')
+    final connMessage = MqttConnectMessage()
+        .authenticateAs(username, password)
+        .withClientIdentifier(clientId)
         .startClean()
         .withWillQos(MqttQos.atLeastOnce);
 
-    print('MQTT客户端连接...');
-    _client!.connectionMessage = connMess;
+    client.connectionMessage = connMessage;
 
     try {
-      await _client!.connect(_username, _password);
+      await client.connect();
+
+      if (client.connectionStatus!.state == MqttConnectionState.connected) {
+        print('MQTT client connected');
+
+        // 订阅主题
+        client.subscribe(topicLight, MqttQos.atLeastOnce);
+        client.subscribe(topicSuggest, MqttQos.atLeastOnce);
+        client.subscribe(topicHighestLight, MqttQos.atLeastOnce);
+
+        // 监听消息
+        client.updates!.listen(_onMessage);
+      } else {
+        print('MQTT client connection failed');
+        client.disconnect();
+      }
     } catch (e) {
-      print('MQTT连接异常: $e');
-      _client!.disconnect();
-      return;
-    }
-
-    if (_client!.connectionStatus!.state == MqttConnectionState.connected) {
-      print('MQTT客户端已连接');
-      _subscribeToTopics();
-    } else {
-      print('MQTT连接失败: ${_client!.connectionStatus!.state}');
-      _client!.disconnect();
+      print('MQTT client exception: $e');
+      client.disconnect();
+      rethrow;
     }
   }
 
-  // 订阅主题
-  void _subscribeToTopics() {
-    // 订阅光照强度
-    _client!.subscribe(_topicLight, MqttQos.atLeastOnce);
-
-    // 订阅建议
-    _client!.subscribe(_topicSuggestion, MqttQos.atLeastOnce);
-
-    // 订阅时间
-    _client!.subscribe(_topicTime, MqttQos.atLeastOnce);
-
-    // 订阅最高光照
-    _client!.subscribe(_topicHighestLight, MqttQos.atLeastOnce);
-
-    // 监听消息
-    _client!.updates!.listen(_onMessage);
+  void _onConnected() {
+    print('MQTT client connected');
   }
 
-  // 消息处理
-  void _onMessage(List<MqttReceivedMessage<MqttMessage>> c) {
-    final recMess = c[0].payload as MqttPublishMessage;
-    final topic = c[0].topic;
-    final payload = MqttPublishPayload.bytesToStringAsString(
+  void _onDisconnected() {
+    print('MQTT client disconnected');
+  }
+
+  void _onSubscribed(String topic) {
+    print('MQTT client subscribed to topic: $topic');
+  }
+
+  void _onMessage(List<MqttReceivedMessage<MqttMessage>> event) {
+    final MqttPublishMessage recMess = event[0].payload as MqttPublishMessage;
+    final String topic = event[0].topic;
+    final String message = MqttPublishPayload.bytesToStringAsString(
       recMess.payload.message,
     );
 
-    //print('收到消息: 主题=$topic, 内容=$payload');
-
-    // 根据主题处理不同的消息
-    if (topic == _topicLight) {
-      _currentLight = payload;
-      _lightController.add(payload);
-    } else if (topic == _topicSuggestion) {
-      _currentSuggestion = payload;
-      _suggestionController.add(payload);
-    } else if (topic == _topicTime) {
-      _currentTime = payload;
-      _timeController.add(payload);
-    } else if (topic == _topicHighestLight) {
-      _currentHighestLight = payload;
-      _highestLightController.add(payload);
-    }
+    _latestMessages[topic] = message;
+    _messageStreamController.add(Map.from(_latestMessages));
   }
 
-  // 连接成功回调
-  void _onConnected() {
-    print('MQTT客户端连接成功');
-  }
-
-  // 断开连接回调
-  void _onDisconnected() {
-    print('MQTT客户端断开连接');
-  }
-
-  // 关闭连接和流
-  void dispose() {
-    _lightController.close();
-    _suggestionController.close();
-    _timeController.close();
-    _highestLightController.close();
-    _client?.disconnect();
+  void disconnect() {
+    client.disconnect();
+    _messageStreamController.close();
   }
 }

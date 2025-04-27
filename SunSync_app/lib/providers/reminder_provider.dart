@@ -30,12 +30,12 @@ class ReminderProvider with ChangeNotifier {
 
     try {
       // 如果用户未登录，先进行匿名登录
-      if (!_firebaseService.isUserLoggedIn) {
-        print('User not logged in, attempting anonymous login...');
-        await _firebaseService.signInAnonymously();
-      } else {
-        print('User already logged in: ${_firebaseService.currentUserId}');
-      }
+      //if (!_firebaseService.isUserLoggedIn) {
+      print('User not logged in, attempting anonymous login...');
+      await _firebaseService.signInAnonymously();
+      // } else {
+      //   print('User already logged in: ${_firebaseService.currentUserId}');
+      // }
 
       // 监听 Firestore 的变化
       _firebaseService.getUserReminders().listen(

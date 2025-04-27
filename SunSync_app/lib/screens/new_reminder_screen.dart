@@ -11,9 +11,14 @@ import '../providers/weather_provider.dart'; // 添加 WeatherProvider 导入
 class NewReminderScreen extends StatefulWidget {
   final ReminderModel? editingReminder;
   final VoidCallback? onSave;
+  final String? preSelectedActivity;
 
-  const NewReminderScreen({Key? key, this.editingReminder, this.onSave})
-    : super(key: key);
+  const NewReminderScreen({
+    Key? key,
+    this.editingReminder,
+    this.onSave,
+    this.preSelectedActivity,
+  }) : super(key: key);
 
   @override
   State<NewReminderScreen> createState() => _NewReminderScreenState();

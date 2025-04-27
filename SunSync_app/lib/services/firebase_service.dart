@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/reminder_model.dart';
+import '../models/light_history_model.dart'; // 添加这个导入
 
 class FirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -21,7 +22,8 @@ class FirebaseService {
 
     return _remindersCollection
         .where('userId', isEqualTo: currentUserId)
-        .orderBy('time', descending: false)
+        // 暂时移除排序，等待索引创建
+        // .orderBy('time', descending: false)
         .snapshots()
         .map(
           (snapshot) =>
@@ -70,6 +72,42 @@ class FirebaseService {
     }
   }
 
-  // 检查用户是否已登录
-  bool get isUserLoggedIn => _auth.currentUser != null;
+  // 光照历史集合引用
+  CollectionReference get _lightHistoryCollection =>
+      _firestore.collection('light_history');
+
+  // 添加光照数据
+  Future<void> addLightHistory(LightHistoryModel lightHistory) async {
+    if (currentUserId == null) throw Exception('User not logged in');
+
+    await _lightHistoryCollection.doc(lightHistory.id).set({
+      ...lightHistory.toMap(),
+      'userId': currentUserId,
+    });
+  }
+
+  // 获取今天的光照历史
+  Stream<List<LightHistoryModel>> getTodayLightHistory() {
+    if (currentUserId == null) return Stream.value([]);
+
+    final today = DateTime.now();
+    final todayStart = DateTime(today.year, today.month, today.day);
+    final todayEnd = todayStart.add(Duration(days: 1));
+
+    return _lightHistoryCollection
+        .where('userId', isEqualTo: currentUserId)
+        .where(
+          'timestamp',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(todayStart),
+        )
+        .where('timestamp', isLessThan: Timestamp.fromDate(todayEnd))
+        .orderBy('timestamp')
+        .snapshots()
+        .map(
+          (snapshot) =>
+              snapshot.docs
+                  .map((doc) => LightHistoryModel.fromFirestore(doc))
+                  .toList(),
+        );
+  }
 }
