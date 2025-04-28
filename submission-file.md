@@ -1,46 +1,44 @@
-<!---
-
 ---
-title: "CASA0017: Web Architecture Final Assessment"
-author: "Steven Gray"
-date: "10 Dec 2021"
+CASA0015: Mobile Systems & Interactions Final Assessment
+Wenhao Yang
+28 April 2025
 ---
-
--->
-
-# Submission Guide
-
-You will need to edit this file, create a PDF using the instructions below, from this file.   Sign it digitally and upload to Moodle
-
-## How to create a PDF from Markdown
-When finished you should export to PDF using VSCode and MarkdownPDF Extension. Make sure you select no headers and no footers in the
-extension preferences before exporting to PDF.   
-
-Upload this PDF into Moodle for submission including a copy of your presentation slides.
 
 ## Link to GitHub Repository
 
-Flutter Application Name - MY APPLICATION NAME
-GitHub Repository - [https://github.com/ucl-casa-ce/casa0015-mobile-assessment](https://github.com/ucl-casa-ce/casa0015-mobile-assessment)
+Flutter Application Name - SunSync (Smart Daylight Activity Manager)
+GitHub Repository - [https://github.com/Youngwer/SunSync](https://github.com/Youngwer/SunSync)
 
 ## Introduction to Application
+SunSync is a mobile application designed to help users reconnect their daily activities with natural light patterns. It addresses the problem of modern indoor lifestyles that disconnect us from beneficial natural light cycles. The app features three main components: a weather tracking system that provides real-time data on outdoor conditions and sun position, an indoor light monitoring system that connects to an Arduino-based light sensor to track ambient brightness, and a smart reminder system that helps schedule activities at optimal light times. 
 
-A brief 200 word explanation of your application and it's use.  Below create a Bibliography to code, tutorial, or plugins you've used in the project. Use this guide
-for citation - [https://www.scribbr.co.uk/referencing/harvard-website-reference/](https://www.scribbr.co.uk/referencing/harvard-website-reference/)
+SunSync integrates hardware and software to create a comprehensive solution. The app collects light data using MQTT protocol from an Arduino MKR1010 microcontroller with a light sensor, displays real-time weather information from the OpenMeteo API, and stores user preferences and light history using Firebase. With an intuitive interface featuring dynamic backgrounds that change based on light conditions, SunSync helps users make better use of daylight through personalized activity recommendations and reminders tied to sunrise and sunset times.
 
-## Biblography
 
-1. Last name, First initial. (Year published). Title. Edition. (Only include the edition if it is not the first edition) City published: Publisher, Page(s). <http://google.com>
+## Bibliography
 
-2. Last name, First initial. (Year published). Title. Edition. (Only include the edition if it is not the first edition) City published: Publisher, Page(s).  <http://google.com>
+1. Stoll, C. (2022). Flutter Documentation. Google LLC. [https://flutter.dev/docs](https://flutter.dev/docs)
+
+2. Dixit, K. (2023). MQTT Client Library for Dart. Dart Package. [https://pub.dev/packages/mqtt_client](https://pub.dev/packages/mqtt_client)
+
+3. Open-Meteo.com (2024). Open-Meteo Weather API Documentation. [https://open-meteo.com/en/docs](https://open-meteo.com/en/docs)
+
+4. Firebase (2023). Firebase Documentation: Authentication. Google LLC. [https://firebase.google.com/docs/auth](https://firebase.google.com/docs/auth)
+
+5. Firebase (2023). Firebase Documentation: Cloud Firestore. Google LLC. [https://firebase.google.com/docs/firestore](https://firebase.google.com/docs/firestore)
+
+6. Adafruit (2022). Arduino MKR1010 WiFi Guide. [https://learn.adafruit.com/arduino-mkr-wifi-1010](https://learn.adafruit.com/arduino-mkr-wifi-1010)
+
+7. Chavda, A. (2023). Charts in Flutter. Pub.dev. [https://pub.dev/packages/fl_chart](https://pub.dev/packages/fl_chart)
+
+8. Provider Package (2023). State Management in Flutter using Provider. [https://pub.dev/packages/provider](https://pub.dev/packages/provider)
 
 ----
 
 ## Declaration of Authorship
+I, Wenhao Yang, confirm that the work presented in this assessment is my own. Where information has been derived from other sources, I confirm that this has been indicated in the work.
 
-We, AUTHORS NAME HERE, confirm that the work presented in this assessment is my own. Where information has been derived from other sources, I confirm that this has been indicated in the work.
+![sign](./image/signature.png)
 
+2025/4/28
 
-Digitally Sign with Your name Here
-
-ASSESSMENT DATE
