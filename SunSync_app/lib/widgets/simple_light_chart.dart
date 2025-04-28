@@ -266,6 +266,11 @@ class _SimpleLightChartState extends State<SimpleLightChart>
     Offset? closestOffset;
 
     for (var item in widget.data) {
+      // 过滤日出前的数据点
+      if (widget.sunrise != null && item.timestamp.isBefore(widget.sunrise!)) {
+        continue;
+      }
+
       final minutesFromStart = item.timestamp.difference(startTime).inMinutes;
       final x = (size.width - 80) * minutesFromStart / timeRange;
       final y =
@@ -395,8 +400,17 @@ class SimpleLightChartPainter extends CustomPainter {
       final fillPath = Path();
       final points = <Offset>[];
 
+      // 过滤并收集日出后的数据点
+      final filteredData =
+          data.where((item) {
+            return sunrise == null || !item.timestamp.isBefore(sunrise!);
+          }).toList();
+
+      // 如果过滤后没有数据，直接返回
+      if (filteredData.isEmpty) return;
+
       // 收集所有数据点
-      for (var item in data) {
+      for (var item in filteredData) {
         final minutesFromStart = item.timestamp.difference(startTime).inMinutes;
         final x = leftMargin + (chartWidth * minutesFromStart / timeRange);
         final y =

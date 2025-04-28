@@ -1,5 +1,5 @@
 # SunSync - Smart Daylight Activity Manager ☀️
-
+![icon](/image/SunSync_icon.png)
 
   <p align="center">
     <strong>Harmonize your daily routine with natural light cycles</strong>
@@ -23,7 +23,7 @@
 
 
 The screenshots offer a clear and intuitive glimpse of the key features:
-<table style="width:100%; table-layout:fixed;"> <tr> <th style="text-align:center;">Weather & Sunlight Overview</th> <th style="text-align:center;">Light History Visualization</th> </tr> <tr> <td style="text-align:center;"> <img src="IMG-GitHub/weather-sunlight-overview.png" alt="Weather Overview" width="320"/><br><br> </td> <td style="text-align:center;"> <img src="IMG-GitHub/light-history-chart.png" alt="Light History" width="320"/><br><br> </td> </tr> <tr> <td style="text-align:center;"> 🔸 Real-Time Weather Data<br> 🔸 Sunrise & Sunset Times<br> 🔸 Activity Suggestions </td> <td style="text-align:center;"> 🔸 Hourly Light Trends<br> 🔸 Daytime Data Filtering<br> 🔸 Simple Chart Display </td> </tr> </table>
+<table style="width:100%; table-layout:fixed;"> <tr> <th style="text-align:center;">Weather & Sunlight Overview</th> <th style="text-align:center;">Light History Visualization</th> </tr> <tr> <td style="text-align:center;"> <img src="image/weather.gif" alt="Weather Overview" width="320"/><br><br> </td> <td style="text-align:center;"> <img src="image/light.gif" alt="Light History" width="320"/><br><br> </td> </tr> <tr> <td style="text-align:center;"> 🔸 Real-Time Weather Data<br> 🔸 Sunrise & Sunset Times<br> 🔸 Activity Suggestions </td> <td style="text-align:center;"> 🔸 Hourly Light Trends<br> 🔸 Daytime Data Filtering<br> 🔸 Simple Chart Display </td> </tr> </table>
 <table style="width:100%; table-layout:fixed;"> <tr> <th style="text-align:center;">Activity Reminder Setup</th> <th style="text-align:center;">Manage Your Reminders</th> </tr> <tr> <td style="text-align:center;"> <img src="image/new-reminder-setup.gif" alt="New Reminder" width="320"/><br><br> </td> <td style="text-align:center;"> <img src="image/manage-reminder.gif" alt="My Reminders" width="320"/><br><br> </td> </tr> <tr> <td style="text-align:center;"> 🔸 Custom Activity Selection<br> 🔸 Sunrise/Sunset Timing<br> 🔸 Notification & Repeat Options </td> <td style="text-align:center;"> 🔸 View All Reminders<br> 🔸 Edit or Delete Easily<br> 🔸 Clean & Intuitive Design </td> </tr> </table>
 
 ### 🌟 Core Functionalities
@@ -215,7 +215,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://opensource.org/license/mit) file for details.
 
 ## 📞 Contact
 
