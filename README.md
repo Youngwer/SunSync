@@ -1,13 +1,12 @@
-# SunSync - Smart Daylight Activity Manager ☀️
-![icon](/image/SunSync_icon.png)
+# SunSync - Smart Daylight Activity Manager <img src="/image/SunSync_icon.png" alt="SunSync Icon" width="80" align="center" />
 
-  <p align="center">
-    <strong>Harmonize your daily routine with natural light cycles</strong>
-  </p>
+<p align="center">
+  <strong>Harmonize your daily routine with natural light cycles</strong>
+</p>
 
-  <p align="left">
-    A Flutter-based mobile application integrated with IoT light sensors to help users maintain healthy lifestyle habits by leveraging natural sunlight patterns.
-  </p>
+<p align="left">
+  A Flutter-based mobile application integrated with IoT light sensors to help users maintain healthy lifestyle habits by leveraging natural sunlight patterns.
+</p>
 </div>
 
 
@@ -17,18 +16,16 @@
 - **IoT Light Monitoring**: MKR1010 + Light sensor integration + MQTT
 - **Smart Reminders**: Sunrise/sunset-synchronized activities
 
-
+## 🎨 Storyboard
+![storyboard](/image/storyboard.png)
 ## 📱 Screenshots
-
-
-
 The screenshots offer a clear and intuitive glimpse of the key features:
 <table style="width:100%; table-layout:fixed;"> <tr> <th style="text-align:center;">Weather & Sunlight Overview</th> <th style="text-align:center;">Light History Visualization</th> </tr> <tr> <td style="text-align:center;"> <img src="image/weather.gif" alt="Weather Overview" width="320"/><br><br> </td> <td style="text-align:center;"> <img src="image/light.gif" alt="Light History" width="320"/><br><br> </td> </tr> <tr> <td style="text-align:center;"> 🔸 Real-Time Weather Data<br> 🔸 Sunrise & Sunset Times<br> 🔸 Activity Suggestions </td> <td style="text-align:center;"> 🔸 Hourly Light Trends<br> 🔸 Daytime Data Filtering<br> 🔸 Simple Chart Display </td> </tr> </table>
 <table style="width:100%; table-layout:fixed;"> <tr> <th style="text-align:center;">Activity Reminder Setup</th> <th style="text-align:center;">Manage Your Reminders</th> </tr> <tr> <td style="text-align:center;"> <img src="image/new-reminder-setup.gif" alt="New Reminder" width="320"/><br><br> </td> <td style="text-align:center;"> <img src="image/manage-reminder.gif" alt="My Reminders" width="320"/><br><br> </td> </tr> <tr> <td style="text-align:center;"> 🔸 Custom Activity Selection<br> 🔸 Sunrise/Sunset Timing<br> 🔸 Notification & Repeat Options </td> <td style="text-align:center;"> 🔸 View All Reminders<br> 🔸 Edit or Delete Easily<br> 🔸 Clean & Intuitive Design </td> </tr> </table>
 
 ### 🌟 Core Functionalities
 
-- **Dynamic Weather and light Dashboard**: Animated weather conditions with sunrise/sunset times and 
+- **Dynamic Weather and light Dashboard**: Animated weather conditions with sunrise/sunset times and changable background of real-time light monitoring according to the light intensity.
 - **Real-time Light Monitoring**: Track indoor light levels using IoT sensors
 - **Activity Reminders**: Set reminders based on natural light cycles
 - **Light History Visualization**: Beautiful charts showing daily light patterns
@@ -39,7 +36,7 @@ The screenshots offer a clear and intuitive glimpse of the key features:
 ## 🛠 Technology Stack
 
 ### Mobile Application
-- **Framework**: Flutter 3.7.2+
+- **Framework**: Flutter 3.7.2
 - **State Management**: Provider
 - **Database**: Firebase Cloud Firestore
 - **Authentication**: Firebase Anonymous Auth
