@@ -28,7 +28,7 @@ The screenshots offer a clear and intuitive glimpse of the key features:
 
 ### 🌟 Core Functionalities
 
-- **Dynamic Weather Dashboard**: Animated weather conditions with sunrise/sunset times
+- **Dynamic Weather and light Dashboard**: Animated weather conditions with sunrise/sunset times and 
 - **Real-time Light Monitoring**: Track indoor light levels using IoT sensors
 - **Activity Reminders**: Set reminders based on natural light cycles
 - **Light History Visualization**: Beautiful charts showing daily light patterns
@@ -44,12 +44,12 @@ The screenshots offer a clear and intuitive glimpse of the key features:
 - **Database**: Firebase Cloud Firestore
 - **Authentication**: Firebase Anonymous Auth
 - **Charts**: Custom Canvas Drawing
-- **Weather Data**: OpenMeteo Free API
+- **Weather Data**: OpenMeteo API
 
 ### IoT Hardware
 - **Microcontroller**: Arduino MKR1010
 - **Sensor**: Light Dependent Resistor (LDR)
-- **Protocol**: MQTT (mqtt.cetools.org)
+- **Protocol**: MQTT
 - **Data Format**: Percentage (0-100%)
 
 ## 📦 Dependencies
@@ -232,4 +232,9 @@ GitHub: https://github.com/Youngwer
 - [Firebase](https://console.firebase.google.com/) for backend services
 - [Flutter community](https://flutter.dev/community) for excellent packages
 
+## Declaration of Authorship
+I, Wenhao Yang, confirm that the work presented in this assessment is my own. Where information has been derived from other sources, I confirm that this has been indicated in the work.
 
+![sign](./image/signature.png)
+
+2025/4/28
